@@ -21,6 +21,7 @@ on:
         options:
           - 'release'
           - 'twilight'
+          - 'custom'
   workflow_call:
     inputs:
       create_release:
@@ -50,7 +51,6 @@ jobs:
           echo "update_version: ${{ inputs.update_version }}"
           echo "update_branch: ${{ inputs.update_branch }}"
           echo "GITHUB_REPOSITORY: ${{ github.repository }}"
-          echo "GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}"
           echo "GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}"
           echo "GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}"
 
@@ -112,6 +112,9 @@ jobs:
             branch="dev"
           elif [[ $branch == "release" ]]; then
             branch="stable"
+          elif [[ $branch == "custom" ]]; then
+            branch=$(git branch --show-current)
+            echo ">>> Using custom branch: $branch"
           fi
           if [[ $(git branch --show-current) != $branch ]]; then
             echo ">>> Branch mismatch"
@@ -462,7 +465,7 @@ jobs:
     needs: [build-data, linux, windows-step-3, check-release, mac-uni, appimage, source, lint, stop-self-hosted]
     runs-on: ubuntu-latest
     environment:
-      name: ${{ inputs.update_branch == 'release' && 'Deploy-Release' || 'Deploy-Twilight' }}
+      name: ${{ inputs.update_branch == 'release' && 'Deploy-Release' || (inputs.update_branch == 'twilight' && 'Deploy-Twilight' || 'Deploy-Custom') }}
 
     steps:
       - name: Checkout repository
