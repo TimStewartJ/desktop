@@ -44,6 +44,18 @@
           "repo": "zen-browser/desktop"
         }
       }
+    },
+    "custom": {
+      "backgroundColor": "#282A33",
+      "brandShorterName": "Zen",
+      "brandShortName": "Custom",
+      "brandFullName": "Zen Custom",
+      "release": {
+        "displayVersion": "1.10c",
+        "github": {
+          "repo": "zen-browser/desktop"
+        }
+      }
     }
   },
   "license": {
