@@ -60,6 +60,7 @@ class ZenMediaController {
 
     window.addEventListener('TabClose', (event) => {
       const linkedBrowser = event.target.linkedBrowser;
+      if (!linkedBrowser?.browsingContext?.mediaController) return;
       this.deinitMediaController(
         linkedBrowser.browsingContext.mediaController,
         true,
@@ -102,7 +103,7 @@ class ZenMediaController {
       mediaController.removeEventListener('deactivated', this.onDeactivated);
 
       this.mediaControllersMap.delete(mediaController.id);
-      this.pipEligibilityMap.delete(retrievedMediaController.browser.browserId);
+      this.pipEligibilityMap.delete(retrievedMediaController?.browser?.browserId);
     }
 
     if (shouldOverride) {
@@ -145,6 +146,10 @@ class ZenMediaController {
     if (!this.mediaControlBar.hasAttribute('hidden')) return;
 
     this.updatePipButton();
+    const mediaInfoElements = [this.mediaTitle, this.mediaArtist];
+    for (const element of mediaInfoElements) {
+      element.removeAttribute('overflow'); // So we can properly recalculate the overflow
+    }
 
     this.mediaControlBar.removeAttribute('hidden');
     window.requestAnimationFrame(() => {
@@ -160,12 +165,11 @@ class ZenMediaController {
         },
         {}
       );
-      this.addLabelOverflows();
+      this.addLabelOverflows(mediaInfoElements);
     });
   }
 
-  addLabelOverflows() {
-    const elements = [this.mediaTitle, this.mediaArtist];
+  addLabelOverflows(elements) {
     for (const element of elements) {
       const parent = element.parentElement;
       if (element.scrollWidth > parent.clientWidth) {
@@ -424,7 +428,10 @@ class ZenMediaController {
   }
 
   onMediaFocus() {
-    this._currentMediaController?.focus();
+    if (!this._currentBrowser) return;
+    const sidebarId = this._currentBrowser.getAttribute('zen-sidebar-id');
+    if (sidebarId) gZenBrowserManagerSidebar.open(sidebarId);
+    else this._currentMediaController?.focus();
   }
 
   onMediaMute() {
